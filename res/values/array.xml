@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="ruleOptions">
+        <item>Default</item>
+    </string-array>
+
+    <string-array name="ruleValues">
+        <item>classpath:/default.mrf.json</item>
+    </string-array>
+</resources>
