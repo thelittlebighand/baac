@@ -26,10 +26,18 @@
 	</PreferenceCategory>
 	<PreferenceCategory android:title="@string/pref_messages_title">
 	<ListPreference
+			android:key="rule"
 			android:entries="@array/ruleOptions"
 			android:entryValues="@array/ruleValues"
-			android:key="rulefiles"
 			android:summary="Available message rules"
 			android:title="Message rules" />
+	</PreferenceCategory>
+
+	<PreferenceCategory android:title="@string/pref_user_title">
+		<EditTextPreference
+			android:key="user"
+			android:title="@string/user_name"
+			android:summary="@string/menu_user_name_summary"
+			android:dialogTitle="@string/menu_user_name_dialogTitle"/>
 	</PreferenceCategory>
 </PreferenceScreen>

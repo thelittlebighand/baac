@@ -1,0 +1,7 @@
+{
+  "name": "Default",
+  "rules": [{
+    "when": "subject.startsWith('Matematik')",
+    "then": "Whoa, math"
+  }]
+}

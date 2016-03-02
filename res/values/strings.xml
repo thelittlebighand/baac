@@ -12,6 +12,7 @@
 
 	<string name="pref_settings_title">Account Settings</string>
 	<string name="pref_messages_title">Messages</string>
+	<string name="pref_user_title">Application</string>
 	<string name="about">This is Bakalari\'s Alternative Client, a hobby project driven by absurdity of this world.</string>
 
 	<string name="url_title">Bakalari homepage URL</string>
@@ -27,7 +28,9 @@
 	<string name="menu_settings_password_summary">Password to access the website</string>
 	<string name="menu_settings_password_dialogTitle">Please enter your password</string>
 
-
+	<string name="user_name">User Name</string>
+	<string name="menu_user_name_summary">User name to show in title</string>
+	<string name="menu_user_name_dialogTitle">Please enter the user name</string>
 
 
 

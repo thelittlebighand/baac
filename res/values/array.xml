@@ -5,6 +5,6 @@
     </string-array>
 
     <string-array name="ruleValues">
-        <item>classpath:/default.mrf.json</item>
+        <item>classpath://default.mrf.json</item>
     </string-array>
 </resources>

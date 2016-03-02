@@ -7,12 +7,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 import org.thelittlebighand.baac.model.SubjectInfo;
+import org.thelittlebighand.baac.model.SubjectScore;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class SubjectInfoDb extends SQLiteOpenHelper {
@@ -48,16 +50,18 @@ public class SubjectInfoDb extends SQLiteOpenHelper {
     }
 
     public List<SubjectInfo> loadSubjectInfo() {
-        List<SubjectInfo> data = new ArrayList<>();
+        List<SubjectInfo> data = new ArrayList();
         Cursor cursor = getReadableDatabase().rawQuery("select * from subject", null);
         try {
             cursor.moveToFirst();
+            int idIdx = cursor.getColumnIndex("id");
             int nameIdx = cursor.getColumnIndex("name");
             int messageIdx = cursor.getColumnIndex("message");
             int averageIdx = cursor.getColumnIndex("average");
             do {
                 data.add(new SubjectInfo(
                     cursor.getString(nameIdx),
+                    loadSubjectScores(cursor.getLong(idIdx)),
                     cursor.getString(messageIdx),
                     cursor.getDouble(averageIdx))
                 );
@@ -72,9 +76,11 @@ public class SubjectInfoDb extends SQLiteOpenHelper {
 
     public List<SubjectInfo> saveSubjectInfo(List<SubjectInfo> data) {
         for (SubjectInfo info : data) {
+            long id = 0L;
             ContentValues values = findSubject(info.getSubject());
             if (values != null) {
                 Log.d("SubjectInfoDb", "Updating " + info.getSubject() + ": " + info.getAvg() + ", " + info.getMessage());
+                id = values.getAsLong("id");
                 values.put("message", info.getMessage());
                 values.put("average", info.getAvg());
                 getWritableDatabase().update("subject", values, "id = ?", new String[] {values.getAsString("id")});
@@ -84,11 +90,55 @@ public class SubjectInfoDb extends SQLiteOpenHelper {
                 values.put("name", info.getSubject());
                 values.put("message", info.getMessage());
                 values.put("average", info.getAvg());
-                getWritableDatabase().insert("subject", null, values);
+                id = getWritableDatabase().insert("subject", null, values);
             }
+
+            saveSubjectScores(id, info.getScores());
         }
 
         return data;
+    }
+
+    private List<SubjectScore> loadSubjectScores(long subjectId) {
+        List<SubjectScore> data = new ArrayList();
+        Cursor cursor = getReadableDatabase().rawQuery("select * from score where subjectId = ?",
+            new String[] {String.valueOf(subjectId)});
+        try {
+            int nameIdx = cursor.getColumnIndex("name");
+            int scoreIdx = cursor.getColumnIndex("score");
+            int weightIdx = cursor.getColumnIndex("weight");
+            int dateIdx = cursor.getColumnIndex("created");
+            int noteIdx = cursor.getColumnIndex("note");
+            if (cursor.moveToFirst()) do {
+                data.add(new SubjectScore(
+                    cursor.getString(nameIdx),
+                    cursor.getString(scoreIdx),
+                    cursor.getDouble(weightIdx),
+                    new Date(cursor.getLong(dateIdx)),
+                    cursor.getString(noteIdx))
+                );
+            } while (cursor.moveToNext());
+
+            return data;
+
+        } finally {
+            cursor.close();
+        }
+    }
+
+    private void saveSubjectScores(long subjectId, List<SubjectScore> scores) {
+        getWritableDatabase().execSQL("delete from score where subjectId = " + subjectId);
+        for (SubjectScore score : scores) {
+            Log.d("SubjectInfoDb", "Saving score " + score.getName() + ": " + score.getScore() + ", " + score.getWeight());
+            ContentValues values = new ContentValues();
+            values.put("subjectId", subjectId);
+            values.put("name", score.getName());
+            values.put("score", score.getScore());
+            values.put("weight", score.getWeight());
+            values.put("created", score.getDate().getTime());
+            values.put("note", score.getNote());
+            getWritableDatabase().insert("score", null, values);
+        }
     }
 
     private ContentValues findSubject(String name) {
