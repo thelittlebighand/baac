@@ -11,12 +11,14 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.*;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import org.bordylek.baac.R;
 import org.thelittlebighand.baac.db.SubjectInfoDb;
 import org.thelittlebighand.baac.fetch.DataFetcher;
+import org.thelittlebighand.baac.model.BakaInfo;
 import org.thelittlebighand.baac.model.RuleFile;
 import org.thelittlebighand.baac.model.SubjectInfo;
 
@@ -29,6 +31,7 @@ public class MainActivity extends ListActivity {
 
     private SubjectInfoAdapter adapter;
     private AsyncTask mrfFinder;
+    private AsyncTask fetcher;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,12 +40,13 @@ public class MainActivity extends ListActivity {
         setListAdapter(adapter);
         getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                Intent intent = new Intent(MainActivity.this, DetailActivity.class);
-                intent.putExtra("SubjectName", adapter.getItem(position).getSubject());
-                startActivity(intent);
+            Intent intent = new Intent(MainActivity.this, DetailActivity.class);
+            intent.putExtra("SubjectName", adapter.getItem(position).getSubject());
+            startActivity(intent);
             }
         });
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String user = prefs.getString("user", null);
         String url = prefs.getString("url", null);
         String username = prefs.getString("username", null);
         String password = prefs.getString("password", null);
@@ -56,6 +60,8 @@ public class MainActivity extends ListActivity {
                     }
                 }
             ).show();
+        } else if (!isEmpty(user)) {
+            setTitle(user);
         }
 
         mrfFinder = new FileFinder().execute(Environment.getExternalStorageDirectory());
@@ -79,6 +85,10 @@ public class MainActivity extends ListActivity {
         return true;
     }
 
+    public boolean onPrepareOptionsMenu (Menu menu) {
+        return fetcher == null || fetcher.getStatus() == AsyncTask.Status.FINISHED;
+    }
+
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.settings:
@@ -97,22 +107,37 @@ public class MainActivity extends ListActivity {
 
     private void update() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        new FetchOperation().execute(prefs.getString("url", null),
-            prefs.getString("username", null), prefs.getString("password", null));
+        String url = prefs.getString("url", null);
+        String username = prefs.getString("username", null);
+        String password = prefs.getString("password", null);
+        String rule = prefs.getString("rule", null);
+        this.fetcher = new FetchOperation().execute(url, username, password, rule);
     }
 
     private boolean isEmpty(String string) {
         return string == null || string.length() == 0;
     }
 
-    private class FetchOperation extends AsyncTask<String, Void, List<SubjectInfo>> {
+    private class FetchOperation extends AsyncTask<String, Void, BakaInfo> {
 
-        protected List<SubjectInfo> doInBackground(String... strings) {
-            return new DataFetcher().fetch(strings[0], strings[1], strings[2]);
+        protected BakaInfo doInBackground(String... strings) {
+            try {
+                DataFetcher fetcher = new DataFetcher();
+                fetcher.setRule((strings[3] != null) ? strings[3] : "classpath://default.mrf.json");
+                return fetcher.fetch(strings[0], strings[1], strings[2]);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return null;
+            }
         }
 
-        protected void onPostExecute(List<SubjectInfo> data) {
-            adapter.saveData(data);
+        protected void onPostExecute(BakaInfo data) {
+            adapter.saveData(data.getSubjects());
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("user", data.getName());
+            editor.commit();
+            MainActivity.this.setTitle(data.getName());
         }
     }
 
@@ -159,7 +184,7 @@ public class MainActivity extends ListActivity {
         public SubjectInfoAdapter(Context context, int textViewResourceId) {
             super(context, textViewResourceId);
             this.resId = textViewResourceId;
-            this.data = new ArrayList<>();
+            this.data = new ArrayList();
             this.context = context;
             this.db = new SubjectInfoDb(context);
         }
@@ -189,7 +214,7 @@ public class MainActivity extends ListActivity {
             SubjectInfo subjectInfo = data.get(position);
             ((TextView)v.findViewById(R.id.subject)).setText(subjectInfo.getSubject());
             ((TextView)v.findViewById(R.id.message)).setText(subjectInfo.getMessage());
-            ((TextView)v.findViewById(R.id.avg)).setText(String.valueOf(subjectInfo.getAvg().doubleValue()));
+            ((TextView)v.findViewById(R.id.avg)).setText(String.format("%.1f", subjectInfo.getAvg()));
             return v;
         }
     }

@@ -7,16 +7,16 @@
 
 	<application android:icon="@drawable/icon" android:label="@string/app_name" android:allowBackup="true">
 
-		<activity android:name="org.bordylek.org.thelittlebighand.baac.MainActivity" android:label="@string/app_name">
+		<activity android:name="org.thelittlebighand.baac.MainActivity" android:label="@string/app_name">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
 
-		<activity android:name="org.bordylek.org.thelittlebighand.baac.DetailActivity" android:label="@string/app_name"/>
-		<activity android:name="org.bordylek.org.thelittlebighand.baac.SettingsActivity" android:label="@string/app_name"/>
-		<activity android:name="org.bordylek.org.thelittlebighand.baac.AboutActivity" android:label="@string/app_name"/>
+		<activity android:name="org.thelittlebighand.baac.DetailActivity" android:label="@string/app_name"/>
+		<activity android:name="org.thelittlebighand.baac.SettingsActivity" android:label="@string/app_name"/>
+		<activity android:name="org.thelittlebighand.baac.AboutActivity" android:label="@string/app_name"/>
 
 	</application>
 
