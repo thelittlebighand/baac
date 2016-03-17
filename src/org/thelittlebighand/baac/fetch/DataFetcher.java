@@ -54,7 +54,9 @@ public class DataFetcher {
                 for (int i = 0; i < predmety.length(); i++) {
                     String subject = predmety.getString(i);
                     List<SubjectScore> scores = readScores(znamky.getJSONArray(i));
-                    add(new SubjectInfo(subject, scores, createMessage(subject, scores)));
+                    SubjectInfo subjectInfo = new SubjectInfo(subject, scores);
+                    subjectInfo.setMessage(createMessage(subject, scores, subjectInfo.getAvg()));
+                    add(subjectInfo);
                 }
             }});
         }
@@ -99,8 +101,8 @@ public class DataFetcher {
         return Double.parseDouble(code.trim()) / 10;
     }
 
-    private String createMessage(String subject, List<SubjectScore> scrores) {
-        return rules.getMessage(subject, scrores);
+    private String createMessage(String subject, List<SubjectScore> scrores, Double avg) {
+        return rules.getMessage(subject, scrores, avg);
     }
 
 }

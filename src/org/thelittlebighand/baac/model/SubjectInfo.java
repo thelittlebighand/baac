@@ -12,10 +12,9 @@ public class SubjectInfo {
     public SubjectInfo() {
     }
 
-    public SubjectInfo(String subject, List<SubjectScore> scores, String message) {
+    public SubjectInfo(String subject, List<SubjectScore> scores) {
         this.subject = subject;
         this.scores = scores;
-        this.message = message;
 
         double sum = 0, sumw = 0;
         for (SubjectScore score : scores) {
@@ -25,6 +24,12 @@ public class SubjectInfo {
             }
         }
         this.avg = sum / (sumw == 0 ? 1 : sumw);
+    }
+
+    public SubjectInfo(String subject, List<SubjectScore> scores, String message) {
+        this(subject, scores);
+        this.message = message;
+
     }
 
     public SubjectInfo(String subject, List<SubjectScore> scores, String message, double avg) {

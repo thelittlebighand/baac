@@ -1,7 +1,20 @@
 {
   "name": "Default",
   "rules": [{
+    "when": "subject.startsWith('Matematik') && avg < 1.5",
+    "then": "Nice, math is important",
+    "weight": 2
+  }, {
     "when": "subject.startsWith('Matematik')",
-    "then": "Whoa, math"
+    "then": "Whoa, math",
+    "weight": 1
+  }, {
+    "when": "min > 3",
+    "then": "Anarchy!",
+    "weight": 0
+  }, {
+    "when": "max == 1",
+    "then": "Good boy!",
+    "weight": 0
   }]
 }

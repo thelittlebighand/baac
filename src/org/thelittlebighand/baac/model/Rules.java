@@ -42,15 +42,19 @@ public class Rules {
         }
     }
 
-    public String getMessage(String subject, List<SubjectScore> scrores) {
+    public String getMessage(String subject, List<SubjectScore> scores, Double avg) {
         double maxWeight = 0;
         List<String> messages = new ArrayList<>();
         JexlContext context = new MapContext();
         context.set("subject", subject);
+        context.set("avg", avg);
+        context.set("min", findMinScore(scores));
+        context.set("max", findMaxScore(scores));
         for (Rule rule : rules) {
             if (rule.getWeight() > maxWeight) {
                 if (((Boolean)rule.getExpression().evaluate(context))) {
                     messages = new ArrayList<>(rule.getMessages());
+                    maxWeight = rule.getWeight();
                 }
             } else if (rule.getWeight() == maxWeight) {
                 if (((Boolean) rule.getExpression().evaluate(context))) {
@@ -60,6 +64,28 @@ public class Rules {
         }
 
         return (messages.size() > 0) ? messages.get(random.nextInt(messages.size())) : "OK!";
+    }
+
+    private Double findMaxScore(List<SubjectScore> scores) {
+        Double max = 0.0;
+        if (scores != null) for (SubjectScore score : scores) {
+            if (max == 0.0 || score.getScoreValue() > max) {
+                max = score.getScoreValue();
+            }
+        }
+
+        return max;
+    }
+
+    private Double findMinScore(List<SubjectScore> scores) {
+        Double min = 0.0;
+        if (scores != null) for (SubjectScore score : scores) {
+            if (min == 0.0 || score.getScoreValue() < min) {
+                min = score.getScoreValue();
+            }
+        }
+
+        return min;
     }
 
     private List<String> readMessages(final Object messages) throws JSONException {
